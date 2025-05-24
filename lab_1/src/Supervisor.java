@@ -8,7 +8,6 @@ public class Supervisor implements Runnable {
         this.program = program;
     }
 
-    // Метод для остановки супервизора
     public void stop() {
         running = false;
         synchronized (program.monitor) {
@@ -42,6 +41,7 @@ public class Supervisor implements Runnable {
                         out.println("FATAL ERROR: Stopping the program...");
                         program.stop();
                         running = false;
+                        break;
                     }
                     case STOPPING -> {
                         out.println("Program stopping. Restarting...");

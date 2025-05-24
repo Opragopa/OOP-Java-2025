@@ -6,7 +6,6 @@ public abstract class AbstractProgram {
     protected State state = State.UNKNOWN;
     protected final Object monitor = new Object();
     protected volatile boolean isRunning = true;
-    protected boolean firstChange = true;
 
     public State getState() {
         synchronized (monitor) {
@@ -16,19 +15,12 @@ public abstract class AbstractProgram {
 
     public void setState(State newState) {
         synchronized (monitor) {
-            if (firstChange) {
-                firstChange = false;
-            } else if (newState == State.UNKNOWN) {
+            if (!isRunning || newState == State.UNKNOWN) {
                 return;
             }
-
             this.state = newState;
             out.println("State changed to - " + newState);
             monitor.notifyAll();
-
-            if (newState == State.FATAL_ERROR) {
-                System.exit(1);
-            }
         }
     }
 

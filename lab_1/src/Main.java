@@ -36,15 +36,12 @@ public class Main {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
         supervisor.stop();
+        out.println("Supervisor stopping...");
         program.stop();
+        out.println("Main: Program stopped");
+        System.exit(0);
 
-        out.println("Main is stop working.");
-
-        /*try {
-            supervisorThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }*/
     }
 }
