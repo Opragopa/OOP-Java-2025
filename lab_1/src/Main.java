@@ -38,10 +38,17 @@ public class Main {
         }
 
         supervisor.stop();
-        out.println("Supervisor stopping...");
         program.stop();
+        //System.exit(0);
+
+        try {
+            supervisorThread.interrupt();
+            supervisorThread.join(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         out.println("Main: Program stopped");
-        System.exit(0);
 
     }
 }
