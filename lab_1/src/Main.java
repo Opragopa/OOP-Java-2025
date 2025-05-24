@@ -1,4 +1,5 @@
 import java.util.Random;
+import static java.lang.System.out;
 
 public class Main {
     public static void main(String[] args) {
@@ -7,7 +8,7 @@ public class Main {
 
             @Override
             public void startRandomChanges() {
-                new Thread(() -> {
+                Thread changeThread = new Thread(() -> {
                     while (isRunning) {
                         try {
                             Thread.sleep(2000 + random.nextInt(3000));
@@ -18,12 +19,13 @@ public class Main {
                             return;
                         }
                     }
-                }).start();
+                });
+                changeThread.setDaemon(true);
+                changeThread.start();
             }
         };
 
         Supervisor supervisor = new Supervisor(program);
-
         program.startRandomChanges();
 
         Thread supervisorThread = new Thread(supervisor);
@@ -34,14 +36,15 @@ public class Main {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-
         supervisor.stop();
         program.stop();
 
-        try {
+        out.println("Main is stop working.");
+
+        /*try {
             supervisorThread.join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
+        }*/
     }
 }

@@ -1,7 +1,6 @@
 import static java.lang.System.out;
 
 public class Supervisor implements Runnable {
-    final int STATUS_CHECK_DELAY_IN_SECONDS = 2;
     private final AbstractProgram program;
     private volatile boolean running = true;
 
@@ -9,8 +8,24 @@ public class Supervisor implements Runnable {
         this.program = program;
     }
 
+    // Метод для остановки супервизора
     public void stop() {
         running = false;
+        synchronized (program.monitor) {
+            program.monitor.notifyAll();
+        }
+    }
+
+    public void startProgram() {
+        synchronized (program.monitor) {
+            program.setState(AbstractProgram.State.RUNNING);
+        }
+    }
+
+    public void stopProgram() {
+        synchronized (program.monitor) {
+            program.setState(AbstractProgram.State.STOPPING);
+        }
     }
 
     @Override
@@ -18,28 +33,28 @@ public class Supervisor implements Runnable {
         out.println("Supervisor starting...");
 
         while (running) {
-            AbstractProgram.State state = program.getState();
-            out.println("Current state: " + state);
+            synchronized (program.monitor) {
+                AbstractProgram.State state = program.getState();
+                out.println("Current state: " + state);
 
-            switch (state) {
-                case FATAL_ERROR -> {
-                    out.println("FATAL ERROR OCCURRED");
-                    program.stop();
-                    running = false;
+                switch (state) {
+                    case FATAL_ERROR -> {
+                        out.println("FATAL ERROR: Stopping the program...");
+                        program.stop();
+                        running = false;
+                    }
+                    case STOPPING -> {
+                        out.println("Program stopping. Restarting...");
+                        program.setState(AbstractProgram.State.RUNNING);
+                    }
                 }
-                case STOPPING -> {
-                    out.println("Breaking. Rebooting...");
-                    program.setState(AbstractProgram.State.RUNNING);
-                }
-            }
 
-            try {
-                synchronized (program) {
-                    program.wait(STATUS_CHECK_DELAY_IN_SECONDS * 1000);
+                try {
+                    program.monitor.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
             }
         }
 
