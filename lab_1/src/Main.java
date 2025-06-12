@@ -3,6 +3,9 @@ import static java.lang.System.out;
 
 public class Main {
     public static void main(String[] args) {
+
+        final int TIMEOUT = 10000;
+
         AbstractProgram program = new AbstractProgram() {
             private final Random random = new Random();
 
@@ -11,7 +14,7 @@ public class Main {
                 Thread changeThread = new Thread(() -> {
                     while (isRunning) {
                         try {
-                            Thread.sleep(2000 + random.nextInt(3000));
+                            Thread.sleep(1000 + random.nextInt(2000));
                             State[] states = {State.RUNNING, State.STOPPING, State.FATAL_ERROR};
                             setState(states[random.nextInt(states.length)]);
                         } catch (InterruptedException e) {
@@ -32,14 +35,13 @@ public class Main {
         supervisorThread.start();
 
         try {
-            Thread.sleep(30000);
+            Thread.sleep(TIMEOUT);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
         supervisor.stop();
         program.stop();
-        //System.exit(0);
 
         try {
             supervisorThread.interrupt();
