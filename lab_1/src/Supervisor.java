@@ -15,18 +15,6 @@ public class Supervisor implements Runnable {
         }
     }
 
-    public void startProgram() {
-        synchronized (program.monitor) {
-            program.setState(AbstractProgram.State.RUNNING);
-        }
-    }
-
-    public void stopProgram() {
-        synchronized (program.monitor) {
-            program.setState(AbstractProgram.State.STOPPING);
-        }
-    }
-
     @Override
     public void run() {
         out.println("Supervisor starting...");
@@ -41,7 +29,6 @@ public class Supervisor implements Runnable {
                         out.println("FATAL ERROR: Stopping the program...");
                         program.stop();
                         running = false;
-                        break;
                     }
                     case STOPPING -> {
                         out.println("Program stopping. Restarting...");
